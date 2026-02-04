@@ -1,0 +1,23 @@
+schema_version: "1.0"
+name: "summary_health_mock"
+version: "0.1.0"
+tool: "innovus"
+description: "Mock skill for testing - generates health reports"
+
+scripts:
+  - name: "run"
+    entry: "templates/run.tcl"
+
+outputs:
+  required:
+    - path: "reports/summary_health.txt"
+      non_empty: true
+      description: "Summary health report"
+    - path: "reports/timing_health.txt"
+      non_empty: true
+      description: "Timing health report"
+
+debug_hints:
+  - "Check if report files were generated in reports/"
+  - "Verify pseudo session processed the request successfully"
+  - "Review session/innovus.stdout.log for execution details"
