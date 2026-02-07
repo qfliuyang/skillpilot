@@ -51,12 +51,6 @@ python3 -m skillpilot.cli.main runner start --config my_config.yaml --heartbeat-
 python3 -m skillpilot.cli.main runner start --config my_config.yaml --disable-lease
 ```
 
-**See [MULTI_TOOL_CONFIG.md](MULTI_TOOL_CONFIG.md) for:**
-- Multi-tool configuration (Innovus, Cadence, Synopsys)
-- Server configurations (LSF, PBS, Slurm)
-- Moving between EDA servers
-- Example configuration files
-
 ### Run a Playbook
 
 ```bash
@@ -126,6 +120,35 @@ python -m skillpilot.cli.main runner cancel --session-dir ./test_session --all
 # Stop session
 python -m skillpilot.cli.main runner stop --session-dir ./test_session --force
 ```
+
+## Configuration
+
+SkillPilot uses simple YAML configuration files with command aliases.
+
+### Config Format
+
+```yaml
+commands:
+  demo: python3 examples/tools/demo_tool.py
+  innovus: innovus -no_gui -batch
+
+scheduler:
+  type: lsf  # lsf, pbs, slurm, or omit for local
+  queue: normal
+  project: myproject
+
+session_dir: ./sessions
+heartbeat_interval_s: 5.0
+enable_lease: true
+```
+
+### Config Options
+
+- `commands`: Tool name to command mappings
+- `scheduler`: Job scheduler settings (optional, omit for local execution)
+- `session_dir`: Directory for session files
+- `heartbeat_interval_s`: Runner heartbeat interval in seconds
+- `enable_lease`: Enable lease enforcement
 
 ## PSP Format
 
