@@ -1,0 +1,32 @@
+# Innovus EDA Tool Configuration
+# For use with Innovus tools (e.g., Genus, Olympus)
+
+tool:
+  type: innovus
+  name: "Innovus Genus"
+  startup_command: "genus"
+  env_vars:
+    LM_LICENSE_FILE: "/path/to/license.dat"
+    INNOVUS_HOME: "/opt/innovus"
+  settings:
+    gui_mode: false
+    memory: 16G
+  tcl_dir: "/opt/innovus/scripts"
+
+server:
+  type: lsf
+  host: "eda-server.company.com"
+  user: "eda_user"
+  submit_type: lsf_bsub
+  queue: "eda_queue"
+  project: "eda_project"
+  resource_spec: "select[mem>16G] rusage[mem=16G] span[hosts=eda_nodes]"
+  timeout_hours: 24
+
+pseudo_submit:
+  enabled: false  # Disabled for real LSF server
+
+runner:
+  session_dir: "./sessions"
+  heartbeat_interval_s: 5.0
+  enable_lease: true

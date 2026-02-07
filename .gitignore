@@ -23,6 +23,8 @@ wheels/
 sessions/
 *.json
 *.out
+jobs/
+
 
 # IDE
 .vscode/

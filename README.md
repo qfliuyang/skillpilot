@@ -13,12 +13,49 @@ SkillPilot separates EDA tool automation into two layers:
 ### Prerequisites
 - Python 3.8 or higher
 - pty: `pip install pty`
+- pyyaml: `pip install pyyaml` (for config files)
 
 ### Installation
 
 ```bash
 pip install -e .
 ```
+
+### Run a Playbook
+
+```bash
+# Basic execution
+python3 -m skillpilot.cli.main run \
+  --playbook examples/playbooks/basic_verification.md \
+  --skills-dir examples/skills
+
+# With custom session directory
+python3 -m skillpilot.cli.main run \
+  --playbook examples/playbooks/basic_verification.md \
+  --session-dir ./my_session
+```
+
+### Start Runner with Configuration
+
+```bash
+# Start runner with config file (recommended)
+python3 -m skillpilot.cli.main runner start --config config_examples/demo_config.yaml
+
+# Override session directory
+python3 -m skillpilot.cli.main runner start --config my_config.yaml --session-dir ./my_session
+
+# Override heartbeat interval
+python3 -m skillpilot.cli.main runner start --config my_config.yaml --heartbeat-interval 10.0
+
+# Disable lease enforcement
+python3 -m skillpilot.cli.main runner start --config my_config.yaml --disable-lease
+```
+
+**See [MULTI_TOOL_CONFIG.md](MULTI_TOOL_CONFIG.md) for:**
+- Multi-tool configuration (Innovus, Cadence, Synopsys)
+- Server configurations (LSF, PBS, Slurm)
+- Moving between EDA servers
+- Example configuration files
 
 ### Run a Playbook
 

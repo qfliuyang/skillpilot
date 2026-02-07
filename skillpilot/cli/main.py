@@ -17,6 +17,7 @@ from skillpilot.runner.core import Runner
 from skillpilot.master.core import Master
 from skillpilot.runner.adapters import DemoToolAdapter
 from skillpilot.protocol import CancelRequest, StopRequest, CancelScope, StopMode, write_atomic_json, get_current_timestamp_ms
+from skillpilot.config import load_config, RunnerConfig
 
 
 def cmd_run(args):
@@ -68,26 +69,38 @@ def cmd_run(args):
 
 def cmd_runner_start(args):
     """
-    Start a Runner session.
+    Start a Runner session with configuration file.
 
     Args:
         args: Parsed command line arguments
     """
-    print(f"Starting runner session: {args.session_dir}", file=sys.stderr)
+    # Load configuration
+    config = load_config(args.config)
 
-    # Create adapter
-    if args.adapter == "demo":
-        adapter = DemoToolAdapter.create(workdir=args.session_dir)
+    print(f"Starting runner with config: {args.config}", file=sys.stderr)
+    print(f"Tool: {config.tool.name}", file=sys.stderr)
+    print(f"Server: {config.server.server_type.value}", file=sys.stderr)
+
+    # Override config with CLI args if provided
+    session_dir = args.session_dir or config.session_dir
+    heartbeat_interval = args.heartbeat_interval or config.heartbeat_interval_s
+    enable_lease = not args.disable_lease and config.enable_lease
+
+    # Create adapter based on tool type
+    from skillpilot.runner.adapters import DemoToolAdapter
+
+    if config.tool.tool_type == "demo":
+        adapter = DemoToolAdapter.create(workdir=session_dir)
     else:
-        print(f"Unknown adapter: {args.adapter}", file=sys.stderr)
+        print(f"Tool type {config.tool.tool_type} not yet implemented", file=sys.stderr)
         return 1
 
     # Create and run runner
     runner = Runner(
-        session_dir=args.session_dir,
+        session_dir=session_dir,
         adapter=adapter,
-        heartbeat_interval_s=args.heartbeat_interval,
-        enable_lease=not args.disable_lease,
+        heartbeat_interval_s=heartbeat_interval,
+        enable_lease=enable_lease,
     )
 
     try:
@@ -209,10 +222,10 @@ def main():
     runner_subparsers = runner_start_parser.add_subparsers(dest="runner_command", help="Runner subcommands")
 
     start_parser = runner_subparsers.add_parser("start", help="Start a Runner session")
-    start_parser.add_argument("--session-dir", required=True, help="Session directory path")
-    start_parser.add_argument("--adapter", default="demo", choices=["demo"], help="Tool adapter")
-    start_parser.add_argument("--heartbeat-interval", type=float, default=5.0, help="Heartbeat interval (seconds)")
-    start_parser.add_argument("--disable-lease", action="store_true", help="Disable lease enforcement")
+    start_parser.add_argument("--config", required=True, help="Path to runner configuration file (YAML)")
+    start_parser.add_argument("--session-dir", help="Session directory path (overrides config)")
+    start_parser.add_argument("--heartbeat-interval", type=float, help="Heartbeat interval (seconds, overrides config)")
+    start_parser.add_argument("--disable-lease", action="store_true", help="Disable lease enforcement (overrides config)")
     start_parser.set_defaults(func=cmd_runner_start)
 
     tail_parser = runner_subparsers.add_parser("tail", help="Tail runner session output")

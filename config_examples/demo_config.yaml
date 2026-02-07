@@ -1,0 +1,30 @@
+# Demo EDA Tool Configuration
+# For testing with examples/tools/demo_tool.py
+
+tool:
+  type: demo
+  name: "Demo Tool"
+  startup_command: "python3 examples/tools/demo_tool.py"
+  env_vars: {}
+  settings: {}
+
+server:
+  type: pseudo  # Use pseudo-submit for local testing
+  host: null
+  user: null
+  submit_type: pseudo
+  queue: null
+  project: null
+  resource_spec: null
+  timeout_hours: 24
+
+pseudo_submit:
+  enabled: true
+  job_dir: "./jobs"
+  queue_delay: 0.5
+  default_runtime: 2.0
+
+runner:
+  session_dir: "./sessions"
+  heartbeat_interval_s: 5.0
+  enable_lease: true

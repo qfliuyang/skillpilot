@@ -1,0 +1,30 @@
+# Generic Tcl Tool Configuration
+# For use with any Tcl-based EDA tool
+
+tool:
+  type: generic_tcl
+  name: "Generic Tcl Tool"
+  startup_command: "tclsh"
+  env_vars:
+    TCLLIBPATH: "/path/to/tcl/lib"
+  settings:
+    prompt_mode: false
+  tcl_dir: "/opt/tcl/lib"
+
+server:
+  type: lsf
+  host: "lsf-server.company.com"
+  user: "tcl_user"
+  submit_type: lsf_bsub
+  queue: "tcl_queue"
+  project: "tcl_project"
+  resource_spec: "select[mem>8G] rusage[mem=8G]"
+  timeout_hours: 12
+
+pseudo_submit:
+  enabled: false  # Use real LSF server
+
+runner:
+  session_dir: "./sessions"
+  heartbeat_interval_s: 5.0
+  enable_lease: true
