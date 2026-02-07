@@ -460,34 +460,26 @@ class Runner:
                 # Check control files
                 cancel, stop, lease = self._check_control_files()
 
-                # Handle stop (M2 - proper mode handling)
                 if stop is not None:
-                    print(f"Stop requested: {stop.mode}", file=sys.stderr)
+                    print(f"🛑 Stop requested: {stop.mode}")
                     if stop.mode == "force":
-                        # Force: terminate immediately
-                        print("Force stop - terminating tool...", file=sys.stderr)
-                        self.stopping = True
-                        break
+                        print("⚡ Force stop - terminating tool...", file=sys.stderr)
                     else:
-                        # Graceful: wait for current command to finish
-                        if self.state and self.state.phase == RunnerPhase.BUSY:
-                            print("Graceful stop - waiting for current command...", file=sys.stderr)
-                            # Don't break yet, let current command finish
-                        else:
-                            self.stopping = True
-                            break
+                        print("🛑 Graceful stop - waiting for current command...")
+                    self.stopping = True
+                    # Graceful: wait for current command to finish
+                    if self.state and self.state.phase == RunnerPhase.BUSY:
+                        cmd_id = self.state.current_cmd_id or "unknown"
+                        print(f"⏳ Executing command: {cmd_id[:8]}")
+                        print(f"   Current phase: {self.state.phase.value}")
 
-                # Handle lease expiration (M2 - basic check)
-                if lease is not None and lease.is_expired():
-                    print("Lease expired, stopping...", file=sys.stderr)
-                    # If no command running (IDLE), stop immediately
-                    if not self.state or self.state.phase != RunnerPhase.BUSY:
-                        self.stopping = True
-                        break
-                    # If command running (BUSY), let it finish gracefully
-                    else:
-                        self.stopping = True
-                        break
+                if self.enable_lease and lease is not None and lease.is_expired():
+                    print(f"🔴 Lease expired, stopping...")
+                    self.stopping = True
+            # Graceful: wait for current command to finish
+            if self.state and self.state.phase == RunnerPhase.BUSY:
+                print(f"⏳ Waiting for current command: {self.state.current_cmd_id}")
+                print(f"   Current phase: {self.state.phase.value}")
 
                 # Scan queue for commands
                 commands = self._scan_queue()
