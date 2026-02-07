@@ -17,7 +17,13 @@ from skillpilot.runner.core import Runner
 from skillpilot.master.core import Master
 from skillpilot.runner.adapters import DemoToolAdapter
 from skillpilot.protocol import CancelRequest, StopRequest, CancelScope, StopMode, write_atomic_json, get_current_timestamp_ms
-from skillpilot.config import load_config, RunnerConfig
+from skillpilot.config import (
+    load_config,
+    get_command,
+    get_session_dir,
+    get_heartbeat_interval,
+    get_lease_enabled,
+)
 
 
 def cmd_run(args):
@@ -74,25 +80,29 @@ def cmd_runner_start(args):
     Args:
         args: Parsed command line arguments
     """
-    # Load configuration
     config = load_config(args.config)
 
     print(f"Starting runner with config: {args.config}", file=sys.stderr)
-    print(f"Tool: {config.tool.name}", file=sys.stderr)
-    print(f"Server: {config.server.server_type.value}", file=sys.stderr)
+    print(f"Commands: {list(config.get('commands', {}).keys())}", file=sys.stderr)
 
-    # Override config with CLI args if provided
-    session_dir = args.session_dir or config.session_dir
-    heartbeat_interval = args.heartbeat_interval or config.heartbeat_interval_s
-    enable_lease = not args.disable_lease and config.enable_lease
+    session_dir = args.session_dir or get_session_dir(config)
+    heartbeat_interval = args.heartbeat_interval or get_heartbeat_interval(config)
+    enable_lease = not args.disable_lease and get_lease_enabled(config)
 
-    # Create adapter based on tool type
-    from skillpilot.runner.adapters import DemoToolAdapter
+    tool_name = args.tool or list(config.get('commands', {}).keys())[0] if config.get('commands') else 'demo'
+    command = get_command(config, tool_name)
 
-    if config.tool.tool_type == "demo":
+    if not command:
+        print(f"Tool command not found: {tool_name}", file=sys.stderr)
+        return 1
+
+    print(f"Tool: {tool_name}", file=sys.stderr)
+    print(f"Command: {command}", file=sys.stderr)
+
+    if tool_name == "demo":
         adapter = DemoToolAdapter.create(workdir=session_dir)
     else:
-        print(f"Tool type {config.tool.tool_type} not yet implemented", file=sys.stderr)
+        print(f"Tool '{tool_name}' not yet implemented (requires adapter)", file=sys.stderr)
         return 1
 
     # Create and run runner
@@ -223,6 +233,7 @@ def main():
 
     start_parser = runner_subparsers.add_parser("start", help="Start a Runner session")
     start_parser.add_argument("--config", required=True, help="Path to runner configuration file (YAML)")
+    start_parser.add_argument("--tool", help="Tool name from config (default: first tool)")
     start_parser.add_argument("--session-dir", help="Session directory path (overrides config)")
     start_parser.add_argument("--heartbeat-interval", type=float, help="Heartbeat interval (seconds, overrides config)")
     start_parser.add_argument("--disable-lease", action="store_true", help="Disable lease enforcement (overrides config)")
