@@ -1,0 +1,15 @@
+{
+  "playbook_name": "Basic Verification",
+  "status": "error",
+  "skills": [
+    {
+      "name": "timing_analysis",
+      "status": "error",
+      "error": "Skill not found: timing_analysis"
+    }
+  ],
+  "failure_reason": "Skill 'timing_analysis' failed: Skill not found: timing_analysis",
+  "evidence_files": [],
+  "start_ts": "1770371427675",
+  "end_ts": "1770371427675"
+}
